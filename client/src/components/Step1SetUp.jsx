@@ -25,6 +25,9 @@ function Step1SetUp({ onStart }) {
     const [resumeText, setResumeText] = useState("");
     const [analysisDone, setAnalysisDone] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
+    const [targetCompany, setTargetCompany] = useState("");
+    const [difficulty, setDifficulty] = useState("Intermediate");
+    const [isPractice, setIsPractice] = useState(false);
 
 
     const handleUploadResume = async () => {
@@ -57,7 +60,7 @@ function Step1SetUp({ onStart }) {
     const handleStart = async () => {
         setLoading(true)
         try {
-           const result = await axios.post(ServerUrl + "/api/interview/generate-questions" , {role, experience, mode , resumeText, projects, skills } , {withCredentials:true}) 
+           const result = await axios.post(ServerUrl + "/api/interview/generate-questions" , {role, experience, mode , resumeText, projects, skills, targetCompany, difficulty, isPractice } , {withCredentials:true}) 
            console.log(result.data)
            if(userData){
             dispatch(setUserData({...userData , credits:result.data.creditsLeft}))
@@ -172,6 +175,31 @@ function Step1SetUp({ onStart }) {
                             <option value="HR">HR Interview</option>
 
                         </select>
+
+                        <div className='relative'>
+                            <FaBriefcase className='absolute top-4 left-4 text-gray-400' />
+                            <input type='text' placeholder='Target Company (Optional, e.g. Amazon)'
+                                className='w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition'
+                                onChange={(e) => setTargetCompany(e.target.value)} value={targetCompany} />
+                        </div>
+
+                        <select value={difficulty}
+                            onChange={(e) => setDifficulty(e.target.value)}
+                            className='w-full py-3 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition'>
+                            <option value="Beginner">Difficulty: Beginner</option>
+                            <option value="Intermediate">Difficulty: Intermediate</option>
+                            <option value="Advanced">Difficulty: Advanced</option>
+                            <option value="Expert">Difficulty: Expert</option>
+                        </select>
+
+                        <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-xl border border-gray-200">
+                            <input type="checkbox" id="practiceMode" 
+                                checked={isPractice} onChange={(e) => setIsPractice(e.target.checked)}
+                                className="w-5 h-5 text-green-600 rounded focus:ring-green-500" />
+                            <label htmlFor="practiceMode" className="text-gray-700 font-medium cursor-pointer flex-1">
+                                Practice Mode <span className="text-sm font-normal text-gray-500 ml-1">(No credits used, results not saved)</span>
+                            </label>
+                        </div>
 
                         {!analysisDone && (
                             <motion.div

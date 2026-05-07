@@ -58,6 +58,12 @@ function Navbar() {
                         <BsCoin size={20}/>
                         {userData?.credits || 0}
                     </button>
+                    
+                    {userData && userData.streak > 0 && (
+                        <div className="flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-md font-semibold">
+                            🔥 {userData.streak}
+                        </div>
+                    )}
 
                     {showCreditPopup && (
                         <div className='absolute right-[-50px] mt-3 w-64 bg-white shadow-xl border border-gray-200 rounded-xl p-5 z-50'>

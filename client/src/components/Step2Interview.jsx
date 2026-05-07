@@ -22,6 +22,8 @@ function Step2Interview({ interviewData, onFinish }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [followUpQuestion, setFollowUpQuestion] = useState(null);
+  const [isFollowUpPhase, setIsFollowUpPhase] = useState(false);
   const [timeLeft, setTimeLeft] = useState(
     questions[0]?.timeLimit || 60
   );
@@ -259,26 +261,60 @@ function Step2Interview({ interviewData, onFinish }) {
     setIsSubmitting(true)
 
     try {
-      const result = await axios.post(ServerUrl + "/api/interview/submit-answer", {
-        interviewId,
-        questionIndex: currentIndex,
-        answer,
-        timeTaken:
-          currentQuestion.timeLimit - timeLeft,
-      } , {withCredentials:true})
+      if (isFollowUpPhase) {
+        // If we are answering the follow-up, just submit it and get feedback
+        const result = await axios.post(ServerUrl + "/api/interview/submit-answer", {
+          interviewId,
+          questionIndex: currentIndex,
+          answer: answer, // In a real system you'd append or separate this, but for now just submitting
+          timeTaken: currentQuestion.timeLimit - timeLeft,
+        }, { withCredentials: true })
 
-      setFeedback(result.data.feedback)
-      speakText(result.data.feedback)
-      setIsSubmitting(false)
+        setFeedback(result.data.feedback)
+        speakText(result.data.feedback)
+        setIsSubmitting(false)
+        setIsFollowUpPhase(false)
+      } else {
+        // First answer: check if AI wants a follow-up
+        const followUpResult = await axios.post(ServerUrl + "/api/interview/followup", {
+          interviewId,
+          questionIndex: currentIndex,
+          question: currentQuestion.question,
+          answer: answer
+        }, { withCredentials: true })
+
+        if (followUpResult.data.followUp) {
+          // AI wants a follow-up
+          setFollowUpQuestion(followUpResult.data.followUp)
+          setIsFollowUpPhase(true)
+          setAnswer("") // Clear answer box for the follow-up
+          speakText(followUpResult.data.followUp)
+          setIsSubmitting(false)
+        } else {
+          // No follow-up needed, submit final answer
+          const result = await axios.post(ServerUrl + "/api/interview/submit-answer", {
+            interviewId,
+            questionIndex: currentIndex,
+            answer,
+            timeTaken: currentQuestion.timeLimit - timeLeft,
+          }, { withCredentials: true })
+
+          setFeedback(result.data.feedback)
+          speakText(result.data.feedback)
+          setIsSubmitting(false)
+        }
+      }
     } catch (error) {
-console.log(error)
-setIsSubmitting(false)
+      console.log(error)
+      setIsSubmitting(false)
     }
   }
 
   const handleNext = async () => {
     setAnswer("");
     setFeedback("");
+    setFollowUpQuestion(null);
+    setIsFollowUpPhase(false);
 
     if (currentIndex + 1 >= questions.length) {
       finishInterview();
@@ -416,7 +452,9 @@ setIsSubmitting(false)
               Question {currentIndex + 1} of {questions.length}
             </p>
 
-            <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed '>{currentQuestion?.question}</div>
+            <div className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed '>
+                {isFollowUpPhase ? followUpQuestion : currentQuestion?.question}
+            </div>
           </div>)
           }
           <textarea
