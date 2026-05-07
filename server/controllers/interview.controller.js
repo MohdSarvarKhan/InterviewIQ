@@ -1,5 +1,6 @@
 import fs from "fs"
 import crypto from "crypto"
+import axios from "axios"
 import { sendInterviewReportEmail } from "../services/email.service.js"
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
@@ -83,9 +84,57 @@ Return strictly JSON:
 };
 
 
+export const scanGithub = async (req, res) => {
+  try {
+    let { username } = req.body;
+    if (!username || !username.trim()) {
+      return res.status(400).json({ message: "GitHub username is required" });
+    }
+
+    // Extract username if user pasted a full URL (e.g. https://github.com/username or github.com/username)
+    username = username.trim();
+    if (username.includes('github.com/')) {
+        username = username.split('github.com/')[1].split('/')[0];
+    }
+
+    const githubRes = await axios.get(
+      `https://api.github.com/users/${username.trim()}/repos?sort=pushed&per_page=10`,
+      { headers: { "Accept": "application/vnd.github.v3+json", "User-Agent": "InterviewIQ-App" } }
+    );
+
+    const repos = githubRes.data
+      .filter(r => !r.fork)
+      .slice(0, 6)
+      .map(r => ({
+        name: r.name,
+        description: r.description || "No description",
+        language: r.language || "Unknown",
+        topics: r.topics || [],
+        stars: r.stargazers_count,
+        url: r.html_url,
+      }));
+
+    if (repos.length === 0) {
+      return res.status(404).json({ message: "No public repositories found for this user." });
+    }
+
+    const contextText = repos
+      .map(r => `- ${r.name} (${r.language})${r.description !== "No description" ? ": " + r.description : ""}${r.topics.length ? " [" + r.topics.join(", ") + "]" : ""}`)
+      .join("\n");
+
+    return res.json({ repos, contextText });
+  } catch (error) {
+    if (error.response?.status === 404) {
+      return res.status(404).json({ message: "GitHub user not found." });
+    }
+    return res.status(500).json({ message: `GitHub scan failed: ${error.message}` });
+  }
+};
+
+
 export const generateQuestion = async (req, res) => {
   try {
-    let { role, experience, mode, resumeText, projects, skills, targetCompany, difficulty, isPractice, language = "English" } = req.body
+    let { role, experience, mode, resumeText, projects, skills, targetCompany, difficulty, isPractice, language = "English", githubContext = "" } = req.body
 
     role = role?.trim();
     experience = experience?.trim();
@@ -143,6 +192,8 @@ export const generateQuestion = async (req, res) => {
       DSA:            "Ask the candidate to verbally explain their approach to algorithmic and data structure problems."
     };
 
+    const safeGithub = githubContext?.trim() || "";
+
     const userPrompt = `
     Role: ${role}
     Experience: ${experience}
@@ -151,6 +202,7 @@ export const generateQuestion = async (req, res) => {
     Projects: ${projectText}
     Skills: ${skillsText}
     Resume: ${safeResume}
+    ${safeGithub ? `GitHub Repositories:\n${safeGithub}` : ""}
     ${companySection}
     `;
 
@@ -177,6 +229,7 @@ Strict Rules:
 - Do NOT add explanations or extra text.
 - One question per line only.
 - Keep language natural and conversational.
+${safeGithub ? `- The candidate has these GitHub repositories. Reference specific repo names, languages, or architectural choices in at least 2 questions to make it personal and challenging.` : ""}
 
 Difficulty progression:
 Question 1 → easy
@@ -185,7 +238,7 @@ Question 3 → medium
 Question 4 → medium
 Question 5 → hard
 
-Base questions on the candidate's role, experience, mode, projects, skills, and resume.
+Base questions on the candidate's role, experience, mode, projects, skills, resume${safeGithub ? ", and GitHub repositories" : ""}.
 `
       },
       {

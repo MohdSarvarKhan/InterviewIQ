@@ -6,7 +6,9 @@ import {
     FaFileUpload,
     FaMicrophoneAlt,
     FaChartLine,
+    FaGithub,
 } from "react-icons/fa";
+import { BsCheckCircleFill, BsXCircleFill } from "react-icons/bs";
 import { useState } from 'react';
 import axios from "axios"
 import { ServerUrl } from '../App';
@@ -29,6 +31,12 @@ function Step1SetUp({ onStart }) {
     const [difficulty, setDifficulty] = useState("Intermediate");
     const [isPractice, setIsPractice] = useState(false);
     const [language, setLanguage] = useState("English");
+    // GitHub states
+    const [githubUsername, setGithubUsername] = useState("");
+    const [githubRepos, setGithubRepos] = useState([]);
+    const [selectedRepos, setSelectedRepos] = useState([]);
+    const [githubScanning, setGithubScanning] = useState(false);
+    const [githubError, setGithubError] = useState("");
 
 
     const handleUploadResume = async () => {
@@ -58,10 +66,33 @@ function Step1SetUp({ onStart }) {
         }
     }
 
+    const handleScanGithub = async () => {
+        if (!githubUsername.trim() || githubScanning) return;
+        setGithubScanning(true);
+        setGithubError("");
+        setGithubRepos([]);
+        setSelectedRepos([]);
+        try {
+            const result = await axios.post(ServerUrl + "/api/interview/github-scan", { username: githubUsername }, { withCredentials: true });
+            const reposList = result.data.repos || [];
+            setGithubRepos(reposList);
+            setSelectedRepos(reposList.map(r => r.name));
+        } catch (error) {
+            setGithubError(error.response?.data?.message || "GitHub scan failed.");
+        } finally {
+            setGithubScanning(false);
+        }
+    };
+
     const handleStart = async () => {
         setLoading(true)
         try {
-           const result = await axios.post(ServerUrl + "/api/interview/generate-questions" , {role, experience, mode , resumeText, projects, skills, targetCompany, difficulty, isPractice, language } , {withCredentials:true}) 
+           const dynamicGithubContext = githubRepos
+               .filter(r => selectedRepos.includes(r.name))
+               .map(r => `- ${r.name} (${r.language})${r.description !== "No description" ? ": " + r.description : ""}${r.topics?.length ? " [" + r.topics.join(", ") + "]" : ""}`)
+               .join("\n");
+
+           const result = await axios.post(ServerUrl + "/api/interview/generate-questions" , {role, experience, mode , resumeText, projects, skills, targetCompany, difficulty, isPractice, language, githubContext: dynamicGithubContext } , {withCredentials:true}) 
            console.log(result.data)
            if(userData){
             dispatch(setUserData({...userData , credits:result.data.creditsLeft}))
@@ -289,6 +320,73 @@ function Step1SetUp({ onStart }) {
                             </motion.div>
                         )}
 
+
+                        {/* GitHub Scan Section */}
+                        <div className='space-y-3'>
+                            <div className='flex gap-2'>
+                                <div className='relative flex-1'>
+                                    <FaGithub className='absolute top-4 left-4 text-gray-400' />
+                                    <input
+                                        type='text'
+                                        placeholder='GitHub Username (Optional)'
+                                        value={githubUsername}
+                                        onChange={(e) => setGithubUsername(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleScanGithub()}
+                                        className='w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition'
+                                    />
+                                </div>
+                                <motion.button
+                                    whileHover={{ scale: 1.04 }}
+                                    whileTap={{ scale: 0.96 }}
+                                    onClick={handleScanGithub}
+                                    disabled={!githubUsername.trim() || githubScanning}
+                                    className='px-4 py-3 bg-gray-900 text-white rounded-xl disabled:opacity-40 text-sm font-semibold whitespace-nowrap transition'
+                                >
+                                    {githubScanning ? "Scanning..." : "Scan GitHub"}
+                                </motion.button>
+                            </div>
+
+                            {githubError && (
+                                <div className='flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2'>
+                                    <BsXCircleFill />
+                                    {githubError}
+                                </div>
+                            )}
+
+                            {githubRepos.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className='bg-gray-900 rounded-xl p-4 space-y-2'
+                                >
+                                    <div className='flex items-center gap-2 mb-3'>
+                                        <BsCheckCircleFill className='text-green-400' />
+                                        <span className='text-white text-sm font-semibold'>{selectedRepos.length} repos selected for AI context</span>
+                                    </div>
+                                    <div className='max-h-60 overflow-y-auto pr-1 space-y-2 custom-scrollbar'>
+                                        {githubRepos.map((repo, i) => (
+                                            <div 
+                                                key={i} 
+                                                onClick={() => setSelectedRepos(prev => prev.includes(repo.name) ? prev.filter(n => n !== repo.name) : [...prev, repo.name])}
+                                                className={`flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer transition ${selectedRepos.includes(repo.name) ? 'bg-gray-800 border border-gray-600' : 'bg-gray-800/40 border border-transparent opacity-60'}`}
+                                            >
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={selectedRepos.includes(repo.name)} 
+                                                    readOnly 
+                                                    className="w-4 h-4 text-green-500 rounded bg-gray-700 border-gray-500 focus:ring-green-500 focus:ring-2 cursor-pointer pointer-events-none" 
+                                                />
+                                                <FaGithub className={`${selectedRepos.includes(repo.name) ? 'text-gray-300' : 'text-gray-500'} shrink-0`} />
+                                                <div className='min-w-0 flex-1'>
+                                                    <p className={`text-xs font-semibold truncate ${selectedRepos.includes(repo.name) ? 'text-white' : 'text-gray-400'}`}>{repo.name}</p>
+                                                    <p className='text-gray-500 text-xs truncate'>{repo.language} {repo.description !== 'No description' ? `· ${repo.description}` : ''}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </div>
 
                         <motion.button
                         onClick={handleStart}

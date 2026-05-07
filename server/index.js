@@ -14,7 +14,20 @@ import adminRouter from "./routes/admin.route.js"
 
 const app = express()
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        // or any localhost origin for development flexibility
+        if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+            callback(null, true);
+        } else {
+            // Also allow the explicit default 5173 just in case
+            if (origin === "http://localhost:5173") {
+                 callback(null, true);
+            } else {
+                 callback(new Error('Not allowed by CORS'));
+            }
+        }
+    },
     credentials:true
 }))
 
