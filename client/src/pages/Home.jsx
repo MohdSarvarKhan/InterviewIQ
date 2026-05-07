@@ -304,9 +304,54 @@ function Home() {
         </div>
       </div>
 
+      {/* AlgoSforge Banner */}
+      <div className='px-6 pb-20'>
+        <div className='max-w-6xl mx-auto'>
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className='relative overflow-hidden bg-gradient-to-br from-green-600 to-emerald-500 rounded-3xl p-10 md:p-14 shadow-2xl'
+          >
+            {/* Decorative blobs */}
+            <div className='absolute -top-10 -right-10 w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none' />
+            <div className='absolute -bottom-14 -left-10 w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none' />
+
+            <div className='relative flex flex-col md:flex-row items-center justify-between gap-8'>
+              <div className='text-white max-w-xl'>
+                <div className='inline-flex items-center gap-2 bg-white/20 text-white text-xs font-semibold px-3 py-1.5 rounded-full mb-5'>
+                  <span className='text-base'>⚡</span> DSA Practice Platform
+                </div>
+                <h2 className='text-3xl md:text-4xl font-bold leading-tight mb-4'>
+                  Sharpen Your DSA Skills on{' '}
+                  <span className='text-yellow-300'>AlgoSforge</span>
+                </h2>
+                <p className='text-green-50 text-base leading-relaxed'>
+                  Practice Data Structures &amp; Algorithms with curated problems, just like LeetCode — built to complement your interview prep. Solve, learn, and get hired faster.
+                </p>
+              </div>
+
+              <div className='flex flex-col items-center gap-4 shrink-0'>
+                <motion.a
+                  href='https://algosforge.netlify.app/'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  className='bg-white text-green-700 font-bold px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all text-lg flex items-center gap-2'
+                >
+                  🚀 Try AlgoSforge
+                </motion.a>
+                <span className='text-green-100 text-sm'>Free to use · No signup needed</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
       {showAuth && <AuthModel onClose={() => setShowAuth(false)} />}
 
-        <Footer/>
+      <Footer />
 
     </div>
   )

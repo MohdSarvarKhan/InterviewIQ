@@ -42,7 +42,12 @@ function Footer() {
             <h3 className="font-semibold text-gray-800 mb-4">Resources</h3>
             <ul className="space-y-3 text-sm text-gray-500">
               <li><a href="#" className="hover:text-green-600 transition">Interview Tips</a></li>
-              <li><a href="#" className="hover:text-green-600 transition">Resume Builder</a></li>
+              <li><a href="https://resume-buildersss.netlify.app/" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 transition">Resume Builder</a></li>
+              <li>
+                <a href="https://algosforge.netlify.app/" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 transition flex items-center gap-1">
+                  AlgoSforge <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full font-semibold">DSA</span>
+                </a>
+              </li>
               <li><a href="#" className="hover:text-green-600 transition">Common Questions</a></li>
               <li><a href="#" className="hover:text-green-600 transition">Career Blog</a></li>
             </ul>
