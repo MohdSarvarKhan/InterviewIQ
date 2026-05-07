@@ -28,6 +28,7 @@ function Step1SetUp({ onStart }) {
     const [targetCompany, setTargetCompany] = useState("");
     const [difficulty, setDifficulty] = useState("Intermediate");
     const [isPractice, setIsPractice] = useState(false);
+    const [language, setLanguage] = useState("English");
 
 
     const handleUploadResume = async () => {
@@ -60,7 +61,7 @@ function Step1SetUp({ onStart }) {
     const handleStart = async () => {
         setLoading(true)
         try {
-           const result = await axios.post(ServerUrl + "/api/interview/generate-questions" , {role, experience, mode , resumeText, projects, skills, targetCompany, difficulty, isPractice } , {withCredentials:true}) 
+           const result = await axios.post(ServerUrl + "/api/interview/generate-questions" , {role, experience, mode , resumeText, projects, skills, targetCompany, difficulty, isPractice, language } , {withCredentials:true}) 
            console.log(result.data)
            if(userData){
             dispatch(setUserData({...userData , credits:result.data.creditsLeft}))
@@ -193,6 +194,15 @@ function Step1SetUp({ onStart }) {
                             <option value="Intermediate">Difficulty: Intermediate</option>
                             <option value="Advanced">Difficulty: Advanced</option>
                             <option value="Expert">Difficulty: Expert</option>
+                        </select>
+
+                        <select value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className='w-full py-3 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition'>
+                            <option value="English">Language: English</option>
+                            <option value="Hindi">Language: Hindi</option>
+                            <option value="Spanish">Language: Spanish</option>
+                            <option value="French">Language: French</option>
                         </select>
 
                         <div className="flex items-center space-x-3 bg-gray-50 p-3 rounded-xl border border-gray-200">

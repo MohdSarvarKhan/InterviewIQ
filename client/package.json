@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.5",
+    "face-api.js": "^0.22.2",
     "firebase": "^12.9.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",

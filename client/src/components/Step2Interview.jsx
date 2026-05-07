@@ -10,9 +10,11 @@ import { useEffect } from 'react'
 import axios from "axios"
 import { ServerUrl } from '../App'
 import { BsArrowRight } from 'react-icons/bs'
+import CodeEditor from './CodeEditor'
+import WebcamMonitor from './WebcamMonitor'
 
 function Step2Interview({ interviewData, onFinish }) {
-  const { interviewId, questions, userName } = interviewData;
+  const { interviewId, questions, userName, mode } = interviewData;
   const [isIntroPhase, setIsIntroPhase] = useState(true);
 
   const [isMicOn, setIsMicOn] = useState(true);
@@ -31,6 +33,8 @@ function Step2Interview({ interviewData, onFinish }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [voiceGender, setVoiceGender] = useState("female");
   const [subtitle, setSubtitle] = useState("");
+  const [code, setCode] = useState("// Write your code here...");
+  const [currentEmotion, setCurrentEmotion] = useState("neutral");
 
 
   const videoRef = useRef(null);
@@ -43,9 +47,21 @@ function Step2Interview({ interviewData, onFinish }) {
       const voices = window.speechSynthesis.getVoices();
       if (!voices.length) return;
 
+      const langMap = {
+        English: "en",
+        Hindi: "hi",
+        Spanish: "es",
+        French: "fr"
+      };
+      
+      const targetLang = langMap[interviewData.language] || "en";
+      
+      const langVoices = voices.filter(v => v.lang.startsWith(targetLang));
+      const voicePool = langVoices.length > 0 ? langVoices : voices;
+
       // Try known female voices first
       const femaleVoice =
-        voices.find(v =>
+        voicePool.find(v =>
           v.name.toLowerCase().includes("zira") ||
           v.name.toLowerCase().includes("samantha") ||
           v.name.toLowerCase().includes("female")
@@ -59,7 +75,7 @@ function Step2Interview({ interviewData, onFinish }) {
 
       // Try known male voices
       const maleVoice =
-        voices.find(v =>
+        voicePool.find(v =>
           v.name.toLowerCase().includes("david") ||
           v.name.toLowerCase().includes("mark") ||
           v.name.toLowerCase().includes("male")
@@ -72,14 +88,14 @@ function Step2Interview({ interviewData, onFinish }) {
       }
 
       // Fallback: first voice (assume female)
-      setSelectedVoice(voices[0]);
+      setSelectedVoice(voicePool[0]);
       setVoiceGender("female");
     };
 
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
 
-  }, [])
+  }, [interviewData.language])
 
   const videoSource = voiceGender === "male" ? maleVideo : femaleVideo;
 
@@ -209,8 +225,15 @@ function Step2Interview({ interviewData, onFinish }) {
   useEffect(() => {
     if (!("webkitSpeechRecognition" in window)) return;
 
+    const langMap = {
+      English: "en-US",
+      Hindi: "hi-IN",
+      Spanish: "es-ES",
+      French: "fr-FR"
+    };
+
     const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = "en-US";
+    recognition.lang = langMap[interviewData.language] || "en-US";
     recognition.continuous = true;
     recognition.interimResults = false;
 
@@ -266,7 +289,7 @@ function Step2Interview({ interviewData, onFinish }) {
         const result = await axios.post(ServerUrl + "/api/interview/submit-answer", {
           interviewId,
           questionIndex: currentIndex,
-          answer: answer, // In a real system you'd append or separate this, but for now just submitting
+          answer: answer + (mode === "DSA" ? `\n\nCode Submitted:\n${code}` : ""),
           timeTaken: currentQuestion.timeLimit - timeLeft,
         }, { withCredentials: true })
 
@@ -280,7 +303,7 @@ function Step2Interview({ interviewData, onFinish }) {
           interviewId,
           questionIndex: currentIndex,
           question: currentQuestion.question,
-          answer: answer
+          answer: answer + (mode === "DSA" ? `\n\nCode Submitted:\n${code}` : "")
         }, { withCredentials: true })
 
         if (followUpResult.data.followUp) {
@@ -295,7 +318,7 @@ function Step2Interview({ interviewData, onFinish }) {
           const result = await axios.post(ServerUrl + "/api/interview/submit-answer", {
             interviewId,
             questionIndex: currentIndex,
-            answer,
+            answer: answer + (mode === "DSA" ? `\n\nCode Submitted:\n${code}` : ""),
             timeTaken: currentQuestion.timeLimit - timeLeft,
           }, { withCredentials: true })
 
@@ -383,7 +406,7 @@ function Step2Interview({ interviewData, onFinish }) {
 
         {/* video section */}
         <div className='w-full lg:w-[35%] bg-white flex flex-col items-center p-6 space-y-6 border-r border-gray-200'>
-          <div className='w-full max-w-md rounded-2xl overflow-hidden shadow-xl'>
+          <div className='w-full max-w-md rounded-2xl overflow-hidden shadow-xl relative'>
             <video
               src={videoSource}
               key={videoSource}
@@ -393,6 +416,14 @@ function Step2Interview({ interviewData, onFinish }) {
               preload="auto"
               className="w-full h-auto object-cover"
             />
+            {/* Webcam Monitor overlay */}
+            <div className="absolute bottom-4 right-4 z-10">
+              <WebcamMonitor onEmotionDetected={(emotion) => setCurrentEmotion(emotion)} />
+            </div>
+            {/* Emotion display overlay */}
+            <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-semibold z-10">
+              User Emotion: {currentEmotion}
+            </div>
           </div>
 
           {/* subtitle */}
@@ -457,12 +488,27 @@ function Step2Interview({ interviewData, onFinish }) {
             </div>
           </div>)
           }
-          <textarea
-            placeholder="Type your answer here..."
-            onChange={(e) => setAnswer(e.target.value)}
-            value={answer}
-            className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800" />
 
+          {mode === "DSA" ? (
+            <div className="flex-1 flex flex-col md:flex-row gap-4 h-full min-h-[300px]">
+              <div className="flex-1">
+                <CodeEditor code={code} setCode={setCode} language="javascript" />
+              </div>
+              <textarea
+                placeholder="Verbal explanation transcript..."
+                onChange={(e) => setAnswer(e.target.value)}
+                value={answer}
+                className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800" 
+              />
+            </div>
+          ) : (
+            <textarea
+              placeholder="Type your answer here..."
+              onChange={(e) => setAnswer(e.target.value)}
+              value={answer}
+              className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800" 
+            />
+          )}
 
          {!feedback ? ( <div className='flex items-center gap-4 mt-6'>
             <motion.button

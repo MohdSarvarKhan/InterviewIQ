@@ -47,7 +47,8 @@ const interviewSchema = new mongoose.Schema({
     default: "in-progress",
   },
   isPublic: { type: Boolean, default: false },
-  shareToken: { type: String, default: "" }
+  shareToken: { type: String, default: "" },
+  language: { type: String, default: "English" }
 }, { timestamps: true })
 
 const Interview = mongoose.model("Interview", interviewSchema)

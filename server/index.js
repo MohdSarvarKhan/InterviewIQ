@@ -10,6 +10,7 @@ import userRouter from "./routes/user.route.js"
 import interviewRouter from "./routes/interview.route.js"
 import paymentRouter from "./routes/payment.route.js"
 import dashboardRouter from "./routes/dashboard.route.js"
+import adminRouter from "./routes/admin.route.js"
 
 const app = express()
 app.use(cors({
@@ -25,6 +26,7 @@ app.use("/api/user", userRouter)
 app.use("/api/interview" , interviewRouter)
 app.use("/api/payment" , paymentRouter)
 app.use("/api/dashboard", dashboardRouter)
+app.use("/api/admin", adminRouter)
 
 const PORT = process.env.PORT || 6000
 app.listen(PORT , ()=>{

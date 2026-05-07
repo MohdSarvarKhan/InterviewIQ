@@ -94,7 +94,11 @@ function Navbar() {
                             <p className='text-md text-blue-500 font-medium mb-1'>{userData?.name}</p>
 
                             <button onClick={()=>navigate("/dashboard")} className='w-full text-left text-sm py-2 hover:text-black text-gray-600'>Dashboard</button>
+                            <button onClick={()=>navigate("/leaderboard")} className='w-full text-left text-sm py-2 hover:text-black text-gray-600'>Leaderboard</button>
                             <button onClick={()=>navigate("/history")} className='w-full text-left text-sm py-2 hover:text-black text-gray-600'>InterView History</button>
+                            {userData?.isAdmin && (
+                              <button onClick={()=>navigate("/admin")} className='w-full text-left text-sm py-2 hover:text-black text-emerald-600 font-medium'>Admin Panel</button>
+                            )}
                             <button onClick={handleLogout} 
                             className='w-full text-left text-sm py-2 flex items-center gap-2 text-red-500'>
                                 <HiOutlineLogout size={16}/>

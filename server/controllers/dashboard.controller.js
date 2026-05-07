@@ -69,3 +69,17 @@ export const getDashboardStats = async (req, res) => {
     return res.status(500).json({ message: "Failed to fetch dashboard stats" });
   }
 }
+
+export const getLeaderboard = async (req, res) => {
+  try {
+    const topUsers = await User.find({ streak: { $gt: 0 } })
+        .sort({ streak: -1, credits: -1 })
+        .limit(50)
+        .select("name streak credits");
+
+    return res.json(topUsers);
+  } catch (error) {
+    console.error("Leaderboard Error:", error);
+    return res.status(500).json({ message: "Failed to fetch leaderboard" });
+  }
+}

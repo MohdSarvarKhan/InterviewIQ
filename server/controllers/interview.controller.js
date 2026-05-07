@@ -85,7 +85,7 @@ Return strictly JSON:
 
 export const generateQuestion = async (req, res) => {
   try {
-    let { role, experience, mode, resumeText, projects, skills, targetCompany, difficulty, isPractice } = req.body
+    let { role, experience, mode, resumeText, projects, skills, targetCompany, difficulty, isPractice, language = "English" } = req.body
 
     role = role?.trim();
     experience = experience?.trim();
@@ -165,6 +165,10 @@ ${safeCompany ? `You are interviewing on behalf of ${safeCompany}.` : ""}
 
 Difficulty level: ${safeDifficulty}. Calibrate question depth accordingly.
 
+IMPORTANT LANGUAGE REQUIREMENT:
+Generate ALL questions strictly in the requested language: ${language}.
+Your response must consist only of questions translated to ${language}.
+
 Generate exactly 5 interview questions.
 
 Strict Rules:
@@ -234,6 +238,7 @@ Base questions on the candidate's role, experience, mode, projects, skills, and 
       targetCompany: safeCompany,
       difficulty: safeDifficulty,
       isPractice: false,
+      language: language,
       resumeText: safeResume,
       questions: formattedQuestions
     })
