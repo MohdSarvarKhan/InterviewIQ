@@ -19,6 +19,6 @@ export const isAdmin = async (req, res, next) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: \`Token is not valid \${error}\` });
+    return res.status(401).json({ message: `Token is not valid ${error}` });
   }
 };

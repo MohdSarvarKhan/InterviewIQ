@@ -54,12 +54,12 @@ function Leaderboard() {
                   className="flex items-center justify-between p-4 sm:p-6 hover:bg-gray-50 transition"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={\`w-10 h-10 flex items-center justify-center rounded-full font-bold \${
+                    <div className={`w-10 h-10 flex items-center justify-center rounded-full font-bold ${
                       index === 0 ? 'bg-yellow-100 text-yellow-600 text-xl' :
                       index === 1 ? 'bg-gray-200 text-gray-600 text-lg' :
                       index === 2 ? 'bg-orange-100 text-orange-800 text-lg' :
                       'bg-emerald-50 text-emerald-600'
-                    }\`}>
+                    }`}>
                       {index + 1}
                     </div>
                     <div>
