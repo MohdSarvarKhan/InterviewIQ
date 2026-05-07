@@ -173,6 +173,9 @@ function Step1SetUp({ onStart }) {
 
                             <option value="Technical">Technical Interview</option>
                             <option value="HR">HR Interview</option>
+                            <option value="Behavioral">Behavioral (STAR Method)</option>
+                            <option value="System Design">System Design</option>
+                            <option value="DSA">Data Structures & Algorithms</option>
 
                         </select>
 

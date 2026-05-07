@@ -45,7 +45,9 @@ const interviewSchema = new mongoose.Schema({
     type: String,
     enum: ["in-progress", "completed"],
     default: "in-progress",
-  }
+  },
+  isPublic: { type: Boolean, default: false },
+  shareToken: { type: String, default: "" }
 }, { timestamps: true })
 
 const Interview = mongoose.model("Interview", interviewSchema)

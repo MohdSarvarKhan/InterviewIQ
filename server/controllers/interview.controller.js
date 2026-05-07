@@ -1,4 +1,6 @@
 import fs from "fs"
+import crypto from "crypto"
+import { sendInterviewReportEmail } from "../services/email.service.js"
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
 const pdfParse = require("pdf-parse")
@@ -408,6 +410,12 @@ export const finishInterview = async (req,res) => {
 
     interview.finalScore = finalScore;
     interview.status = "completed";
+    
+    if (!interview.shareToken) {
+      interview.shareToken = crypto.randomBytes(16).toString("hex");
+      interview.isPublic = true;
+    }
+
     await interview.save();
 
     // --- Streak Logic ---
@@ -435,6 +443,22 @@ export const finishInterview = async (req,res) => {
       await user.save();
     }
     // --- End Streak Logic ---
+
+    // --- Send Email Notification ---
+    if (user && user.email) {
+      const publicUrl = `http://localhost:5173/public-report/${interview.shareToken}`;
+      const reportData = {
+        role: interview.role,
+        finalScore: Number(finalScore.toFixed(1)),
+        avgConfidence: Number(avgConfidence.toFixed(1)),
+        avgCommunication: Number(avgCommunication.toFixed(1)),
+        avgCorrectness: Number(avgCorrectness.toFixed(1))
+      };
+      
+      // Fire and forget (don't await so it doesn't block the API response)
+      sendInterviewReportEmail(user.email, user.name, reportData, publicUrl);
+    }
+    // --- End Send Email Notification ---
 
     return res.status(200).json({
       finalScore: Number(finalScore.toFixed(1)),
@@ -507,6 +531,7 @@ export const getInterviewReport = async (req,res) => {
       confidence: Number(avgConfidence.toFixed(1)),
       communication: Number(avgCommunication.toFixed(1)),
       correctness: Number(avgCorrectness.toFixed(1)),
+      shareToken: interview.shareToken, // Return token for sharing
       questionWiseScore: interview.questions.map((q) => ({
         question: q.question,
         score: q.score || 0,
@@ -514,6 +539,7 @@ export const getInterviewReport = async (req,res) => {
         confidence: q.confidence || 0,
         communication: q.communication || 0,
         correctness: q.correctness || 0,
+        followUpQuestion: q.followUpQuestion || "",
       })),
     });
 
@@ -521,6 +547,56 @@ export const getInterviewReport = async (req,res) => {
     return res.status(500).json({message:`failed to find currentUser Interview report ${error}`})
   }
 }
+
+export const getPublicReport = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const interview = await Interview.findOne({ shareToken: token, isPublic: true }).populate("userId", "name");
+
+    if (!interview) {
+      return res.status(404).json({ message: "Public report not found or link is invalid" });
+    }
+
+    const totalQuestions = interview.questions.length;
+    let totalConfidence = 0;
+    let totalCommunication = 0;
+    let totalCorrectness = 0;
+
+    interview.questions.forEach((q) => {
+      totalConfidence += q.confidence || 0;
+      totalCommunication += q.communication || 0;
+      totalCorrectness += q.correctness || 0;
+    });
+
+    const avgConfidence = totalQuestions ? totalConfidence / totalQuestions : 0;
+    const avgCommunication = totalQuestions ? totalCommunication / totalQuestions : 0;
+    const avgCorrectness = totalQuestions ? totalCorrectness / totalQuestions : 0;
+
+    return res.json({
+      userName: interview.userId.name,
+      role: interview.role,
+      targetCompany: interview.targetCompany,
+      difficulty: interview.difficulty,
+      finalScore: interview.finalScore,
+      confidence: Number(avgConfidence.toFixed(1)),
+      communication: Number(avgCommunication.toFixed(1)),
+      correctness: Number(avgCorrectness.toFixed(1)),
+      questionWiseScore: interview.questions.map((q) => ({
+        question: q.question,
+        score: q.score || 0,
+        feedback: q.feedback || "",
+        confidence: q.confidence || 0,
+        communication: q.communication || 0,
+        correctness: q.correctness || 0,
+        followUpQuestion: q.followUpQuestion || "",
+      })),
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: \`Failed to fetch public report \${error}\` });
+  }
+}
+
 
 export const followUpQuestion = async (req, res) => {
   try {

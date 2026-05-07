@@ -1,5 +1,5 @@
-import React from 'react'
-import { FaArrowLeft } from 'react-icons/fa';
+import React, { useState } from 'react'
+import { FaArrowLeft, FaShareAlt, FaCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { motion } from "motion/react"
 import { buildStyles, CircularProgressbar } from 'react-circular-progressbar';
@@ -22,8 +22,20 @@ function Step3Report({ report }) {
     confidence = 0,
     communication = 0,
     correctness = 0,
+    shareToken = "",
     questionWiseScore = [],
   } = report;
+
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    if (shareToken) {
+      const publicUrl = `${window.location.origin}/public-report/${shareToken}`;
+      navigator.clipboard.writeText(publicUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    }
+  };
 
   const questionScoreData = questionWiseScore.map((score, index) => ({
     name: `Q${index + 1}`,
@@ -190,7 +202,20 @@ function Step3Report({ report }) {
           </div>
         </div>
 
-        <button onClick={downloadPDF} className='bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md transition-all duration-300 font-semibold text-sm sm:text-base text-nowrap'>Download PDF</button>
+        <div className='flex items-center gap-3'>
+          {shareToken && (
+            <button 
+              onClick={handleShare} 
+              className='flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-xl shadow-md transition-all duration-300 font-semibold text-sm sm:text-base text-nowrap'
+            >
+              {copied ? <FaCheck /> : <FaShareAlt />}
+              {copied ? "Link Copied!" : "Share Report"}
+            </button>
+          )}
+          <button onClick={downloadPDF} className='bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl shadow-md transition-all duration-300 font-semibold text-sm sm:text-base text-nowrap'>
+            Download PDF
+          </button>
+        </div>
       </div>
 
 
