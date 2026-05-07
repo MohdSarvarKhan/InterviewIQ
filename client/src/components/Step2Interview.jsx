@@ -397,7 +397,6 @@ function Step2Interview({ interviewData, onFinish }) {
 
       {/* ── Fixed AI Interviewer Video — left side ───────────────────────── */}
       <div
-        ref={videoCardRef}
         className='fixed left-4 top-1/2 -translate-y-1/2 z-50 rounded-2xl shadow-2xl overflow-hidden border-2 border-emerald-500/60 bg-black select-none'
         style={{ width: 220 }}
       >

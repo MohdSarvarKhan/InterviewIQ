@@ -85,6 +85,10 @@ function Step1SetUp({ onStart }) {
     };
 
     const handleStart = async () => {
+        if (!userData) {
+            alert("Please log in to start an interview.");
+            return;
+        }
         setLoading(true)
         try {
            const dynamicGithubContext = githubRepos
@@ -98,10 +102,11 @@ function Step1SetUp({ onStart }) {
             dispatch(setUserData({...userData , credits:result.data.creditsLeft}))
            }
            setLoading(false)
-           onStart(result.data)
+           onStart({...result.data, mode, language})
 
         } catch (error) {
             console.log(error)
+            alert(error.response?.data?.message || "Failed to start interview. Please try again.");
             setLoading(false)
         }
     }
