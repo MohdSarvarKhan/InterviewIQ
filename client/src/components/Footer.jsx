@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-200 pt-16 pb-8">
+    <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-16 pb-8 transition-colors">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand & Description */}
@@ -13,9 +13,9 @@ function Footer() {
               <div className="bg-green-600 text-white p-2 rounded-lg">
                 <BsRobot size={20} />
               </div>
-              <h2 className="font-bold text-xl text-gray-800">InterviewIQ</h2>
+              <h2 className="font-bold text-xl text-gray-800 dark:text-white">InterviewIQ</h2>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed mb-6">
+            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">
               AI-powered interview preparation platform designed to improve
               communication skills, technical depth, and professional confidence.
             </p>
@@ -28,8 +28,8 @@ function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-4">Platform</h3>
-            <ul className="space-y-3 text-sm text-gray-500">
+            <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Platform</h3>
+            <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
               <li><Link to="/interview" className="hover:text-green-600 transition">Practice Interview</Link></li>
               <li><Link to="/history" className="hover:text-green-600 transition">My History</Link></li>
               <li><Link to="/leaderboard" className="hover:text-green-600 transition">Leaderboard</Link></li>
@@ -39,33 +39,33 @@ function Footer() {
 
           {/* Resources */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-4">Resources</h3>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li><a href="#" className="hover:text-green-600 transition">Interview Tips</a></li>
+            <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Resources</h3>
+            <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
+              <li><Link to="/tips" className="hover:text-green-600 transition">Interview Tips</Link></li>
               <li><a href="https://resume-buildersss.netlify.app/" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 transition">Resume Builder</a></li>
               <li>
                 <a href="https://algosforge.netlify.app/" target="_blank" rel="noopener noreferrer" className="hover:text-green-600 transition flex items-center gap-1">
-                  AlgoSforge <span className="text-xs bg-green-100 text-green-600 px-1.5 py-0.5 rounded-full font-semibold">DSA</span>
+                  AlgoSforge <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full font-semibold">DSA</span>
                 </a>
               </li>
-              <li><a href="#" className="hover:text-green-600 transition">Common Questions</a></li>
-              <li><a href="#" className="hover:text-green-600 transition">Career Blog</a></li>
+              <li><Link to="/questions" className="hover:text-green-600 transition">Common Questions</Link></li>
+              <li><Link to="/blog" className="hover:text-green-600 transition">Career Blog</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-gray-800 mb-4">Legal</h3>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li><a href="#" className="hover:text-green-600 transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-green-600 transition">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-green-600 transition">Cookie Policy</a></li>
-              <li><a href="#" className="hover:text-green-600 transition">Contact Us</a></li>
+            <h3 className="font-semibold text-gray-800 dark:text-white mb-4">Legal</h3>
+            <ul className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
+              <li><Link to="/privacy" className="hover:text-green-600 transition">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-green-600 transition">Terms of Service</Link></li>
+              <li><Link to="/cookies" className="hover:text-green-600 transition">Cookie Policy</Link></li>
+              <li><Link to="/contact" className="hover:text-green-600 transition">Contact Us</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400 dark:text-gray-500">
           <p>© {new Date().getFullYear()} InterviewIQ.AI. All rights reserved.</p>
           <div className="flex gap-6">
             <span>Made with ❤️ for Job Seekers</span>

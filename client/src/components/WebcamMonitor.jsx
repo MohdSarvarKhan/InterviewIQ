@@ -71,7 +71,7 @@ function WebcamMonitor({ onEmotionDetected }) {
   };
 
   return (
-    <div className="relative w-48 h-36 rounded-xl overflow-hidden shadow-lg border-2 border-emerald-500 bg-black">
+    <div className="relative w-full h-36 rounded-b-xl overflow-hidden bg-black">
       {!isModelsLoaded && (
         <div className="absolute inset-0 flex items-center justify-center text-white text-xs">
           Loading AI Models...
@@ -86,7 +86,7 @@ function WebcamMonitor({ onEmotionDetected }) {
         style={{ transform: "scaleX(-1)" }} // Mirror the video
       />
       <div className="absolute bottom-1 left-1 right-1 text-center bg-black/50 text-white text-[10px] rounded-full py-0.5 backdrop-blur-sm">
-        Webcam Monitor Active
+        Webcam Active
       </div>
     </div>
   );

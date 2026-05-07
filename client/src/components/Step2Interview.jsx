@@ -33,21 +33,22 @@ function Step2Interview({ interviewData, onFinish }) {
   const [code, setCode] = useState("// Write your code here...");
   const [currentEmotion, setCurrentEmotion] = useState("neutral");
 
-  // ── Draggable video state ──────────────────────────────────────────────────
-  const [videoPos, setVideoPos] = useState({ x: 24, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const videoCardRef = useRef(null);
-  const videoPosRef = useRef(videoPos);
+  // ── Draggable webcam state (user's camera) ────────────────────────────────
+  const [webcamPos, setWebcamPos] = useState({ x: 0, y: 0 });
+  const [isWebcamDragging, setIsWebcamDragging] = useState(false);
+  const webcamDragOffset = useRef({ x: 0, y: 0 });
+  const webcamCardRef = useRef(null);
+  const webcamPosRef = useRef({ x: 0, y: 0 });
 
   const videoRef = useRef(null);
   const currentQuestion = questions[currentIndex];
 
-  // Set initial Y after mount (needs window height)
+  // Set initial webcam position (bottom-right corner)
   useEffect(() => {
-    const initialY = Math.max(0, window.innerHeight - 340);
-    setVideoPos({ x: 24, y: initialY });
-    videoPosRef.current = { x: 24, y: initialY };
+    const initX = window.innerWidth - 220;
+    const initY = window.innerHeight - 200;
+    setWebcamPos({ x: initX, y: initY });
+    webcamPosRef.current = { x: initX, y: initY };
   }, []);
 
   // ── Voice setup ──────────────────────────────────────────────────────────
@@ -235,65 +236,64 @@ function Step2Interview({ interviewData, onFinish }) {
     };
   }, []);
 
-  // ── Drag handlers ─────────────────────────────────────────────────────────
-  const handleMouseDown = useCallback((e) => {
+  // ── Webcam drag handlers ───────────────────────────────────────────────────
+  const handleWebcamMouseDown = useCallback((e) => {
     e.preventDefault();
-    setIsDragging(true);
-    dragOffset.current = {
-      x: e.clientX - videoPosRef.current.x,
-      y: e.clientY - videoPosRef.current.y,
+    setIsWebcamDragging(true);
+    webcamDragOffset.current = {
+      x: e.clientX - webcamPosRef.current.x,
+      y: e.clientY - webcamPosRef.current.y,
     };
   }, []);
 
-  const handleMouseMove = useCallback((e) => {
-    if (!isDragging) return;
-    const cardW = videoCardRef.current?.offsetWidth  || 260;
-    const cardH = videoCardRef.current?.offsetHeight || 320;
-    const newX = Math.max(0, Math.min(window.innerWidth  - cardW, e.clientX - dragOffset.current.x));
-    const newY = Math.max(0, Math.min(window.innerHeight - cardH, e.clientY - dragOffset.current.y));
-    videoPosRef.current = { x: newX, y: newY };
-    setVideoPos({ x: newX, y: newY });
-  }, [isDragging]);
+  const handleWebcamMouseMove = useCallback((e) => {
+    if (!isWebcamDragging) return;
+    const cardW = webcamCardRef.current?.offsetWidth  || 192;
+    const cardH = webcamCardRef.current?.offsetHeight || 160;
+    const newX = Math.max(0, Math.min(window.innerWidth  - cardW, e.clientX - webcamDragOffset.current.x));
+    const newY = Math.max(0, Math.min(window.innerHeight - cardH, e.clientY - webcamDragOffset.current.y));
+    webcamPosRef.current = { x: newX, y: newY };
+    setWebcamPos({ x: newX, y: newY });
+  }, [isWebcamDragging]);
 
-  const handleMouseUp = useCallback(() => setIsDragging(false), []);
+  const handleWebcamMouseUp = useCallback(() => setIsWebcamDragging(false), []);
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+    if (isWebcamDragging) {
+      window.addEventListener('mousemove', handleWebcamMouseMove);
+      window.addEventListener('mouseup', handleWebcamMouseUp);
     }
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mousemove', handleWebcamMouseMove);
+      window.removeEventListener('mouseup', handleWebcamMouseUp);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isWebcamDragging, handleWebcamMouseMove, handleWebcamMouseUp]);
 
-  // ── Touch drag support ────────────────────────────────────────────────────
-  const handleTouchStart = useCallback((e) => {
+  const handleWebcamTouchStart = useCallback((e) => {
     const touch = e.touches[0];
-    setIsDragging(true);
-    dragOffset.current = { x: touch.clientX - videoPosRef.current.x, y: touch.clientY - videoPosRef.current.y };
+    setIsWebcamDragging(true);
+    webcamDragOffset.current = { x: touch.clientX - webcamPosRef.current.x, y: touch.clientY - webcamPosRef.current.y };
   }, []);
 
-  const handleTouchMove = useCallback((e) => {
-    if (!isDragging) return;
+  const handleWebcamTouchMove = useCallback((e) => {
+    if (!isWebcamDragging) return;
     const touch = e.touches[0];
-    const cardW = videoCardRef.current?.offsetWidth  || 260;
-    const cardH = videoCardRef.current?.offsetHeight || 320;
-    const newX = Math.max(0, Math.min(window.innerWidth  - cardW, touch.clientX - dragOffset.current.x));
-    const newY = Math.max(0, Math.min(window.innerHeight - cardH, touch.clientY - dragOffset.current.y));
-    videoPosRef.current = { x: newX, y: newY };
-    setVideoPos({ x: newX, y: newY });
-  }, [isDragging]);
+    const cardW = webcamCardRef.current?.offsetWidth  || 192;
+    const cardH = webcamCardRef.current?.offsetHeight || 160;
+    const newX = Math.max(0, Math.min(window.innerWidth  - cardW, touch.clientX - webcamDragOffset.current.x));
+    const newY = Math.max(0, Math.min(window.innerHeight - cardH, touch.clientY - webcamDragOffset.current.y));
+    webcamPosRef.current = { x: newX, y: newY };
+    setWebcamPos({ x: newX, y: newY });
+  }, [isWebcamDragging]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className='min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-100 flex items-center justify-center p-4 sm:p-6'>
-      <div className='w-full max-w-4xl min-h-[85vh] bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden'>
+    <div className='min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-100 dark:from-black dark:via-gray-900 dark:to-black flex items-center justify-center p-4 sm:p-6 transition-colors pt-24 pb-12'>
+      <div className='w-full max-w-4xl min-h-[85vh] bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden transition-colors'>
 
         {/* ── Top bar ──────────────────────────────────────────────────── */}
-        <div className='flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-10'>
-          <h2 className='text-lg font-bold text-emerald-600 flex items-center gap-2'>
+        <div className='flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10 transition-colors'>
+          <h2 className='text-lg font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2'>
             <span className='w-2 h-2 rounded-full bg-emerald-500 animate-pulse' />
             AI Smart Interview
           </h2>
@@ -302,14 +302,14 @@ function Step2Interview({ interviewData, onFinish }) {
               {isAIPlaying && (
                 <motion.span
                   initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                  className='text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full'
+                  className='text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 px-3 py-1 rounded-full transition-colors'
                 >
                   🎙 AI Speaking…
                 </motion.span>
               )}
             </AnimatePresence>
-            <div className='flex items-center gap-3 text-sm text-gray-500'>
-              <span className='font-semibold text-gray-800'>{currentIndex + 1}<span className='font-normal text-gray-400'>/{questions.length}</span></span>
+            <div className='flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400'>
+              <span className='font-semibold text-gray-800 dark:text-white transition-colors'>{currentIndex + 1}<span className='font-normal text-gray-400'>/{questions.length}</span></span>
               <Timer timeLeft={timeLeft} totalTime={currentQuestion?.timeLimit} />
             </div>
           </div>
@@ -322,13 +322,13 @@ function Step2Interview({ interviewData, onFinish }) {
           {!isIntroPhase && (
             <motion.div
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              className='mb-6 bg-gray-50 p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm'
+              className='mb-6 bg-gray-50 dark:bg-gray-800/50 p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors'
             >
-              <p className='text-xs text-gray-400 mb-2'>
+              <p className='text-xs text-gray-400 dark:text-gray-500 mb-2'>
                 Question {currentIndex + 1} of {questions.length}
                 {isFollowUpPhase && <span className='ml-2 text-emerald-500 font-semibold'>· Follow-up</span>}
               </p>
-              <p className='text-base sm:text-lg font-semibold text-gray-800 leading-relaxed'>
+              <p className='text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-100 leading-relaxed transition-colors'>
                 {isFollowUpPhase ? followUpQuestion : currentQuestion?.question}
               </p>
             </motion.div>
@@ -337,10 +337,10 @@ function Step2Interview({ interviewData, onFinish }) {
           {/* Intro splash */}
           {isIntroPhase && (
             <div className='flex-1 flex flex-col items-center justify-center text-center gap-4'>
-              <div className='w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center'>
+              <div className='w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center transition-colors'>
                 <span className='text-3xl'>🤖</span>
               </div>
-              <p className='text-gray-500 text-sm'>AI interviewer is greeting you…</p>
+              <p className='text-gray-500 dark:text-gray-400 text-sm transition-colors'>AI interviewer is greeting you…</p>
             </div>
           )}
 
@@ -352,14 +352,14 @@ function Step2Interview({ interviewData, onFinish }) {
                 <textarea
                   placeholder="Verbal explanation transcript…"
                   onChange={e => setAnswer(e.target.value)} value={answer}
-                  className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800"
+                  className="flex-1 bg-gray-100 dark:bg-gray-800 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 transition-colors text-gray-800 dark:text-gray-100"
                 />
               </div>
             ) : (
               <textarea
                 placeholder="Type or speak your answer here…"
                 onChange={e => setAnswer(e.target.value)} value={answer}
-                className="flex-1 bg-gray-100 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-gray-800 min-h-[200px]"
+                className="flex-1 bg-gray-100 dark:bg-gray-800 p-4 sm:p-6 rounded-2xl resize-none outline-none border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-emerald-500 transition-colors text-gray-800 dark:text-gray-100 min-h-[200px]"
               />
             )
           )}
@@ -369,7 +369,7 @@ function Step2Interview({ interviewData, onFinish }) {
             !feedback ? (
               <div className='flex items-center gap-4 mt-5'>
                 <motion.button onClick={toggleMic} whileTap={{ scale: 0.9 }}
-                  className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full shadow-lg transition ${isMicOn ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'}`}
+                  className={`w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full shadow-lg transition-colors ${isMicOn ? 'bg-black dark:bg-white text-white dark:text-black' : 'bg-gray-200 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}
                 >
                   {isMicOn ? <FaMicrophone size={20} /> : <FaMicrophoneSlash size={20} />}
                 </motion.button>
@@ -381,9 +381,9 @@ function Step2Interview({ interviewData, onFinish }) {
               </div>
             ) : (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className='mt-5 bg-emerald-50 border border-emerald-200 p-5 rounded-2xl shadow-sm'
+                className='mt-5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-5 rounded-2xl shadow-sm transition-colors'
               >
-                <p className='text-emerald-700 font-medium mb-4'>{feedback}</p>
+                <p className='text-emerald-700 dark:text-emerald-400 font-medium mb-4 transition-colors'>{feedback}</p>
                 <button onClick={handleNext}
                   className='w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-3 rounded-xl shadow-md hover:opacity-90 transition flex items-center justify-center gap-1'
                 >
@@ -395,43 +395,27 @@ function Step2Interview({ interviewData, onFinish }) {
         </div>
       </div>
 
-      {/* ── Floating draggable AI video card ─────────────────────────────── */}
+      {/* ── Fixed AI Interviewer Video — left side ───────────────────────── */}
       <div
         ref={videoCardRef}
-        style={{ position: 'fixed', left: videoPos.x, top: videoPos.y, zIndex: 50, width: 256 }}
-        className='rounded-2xl shadow-2xl overflow-hidden border-2 border-white/60 bg-black select-none'
+        className='fixed left-4 top-1/2 -translate-y-1/2 z-50 rounded-2xl shadow-2xl overflow-hidden border-2 border-emerald-500/60 bg-black select-none'
+        style={{ width: 220 }}
       >
-        {/* Drag handle */}
-        <div
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleMouseUp}
-          className={`flex items-center justify-between px-3 py-2 bg-gray-900 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-        >
-          <div className='flex items-center gap-2'>
-            <span className='w-2 h-2 rounded-full bg-emerald-400 animate-pulse' />
-            <span className='text-white text-xs font-semibold'>AI Interviewer</span>
-          </div>
-          <BsGripVertical className='text-gray-400' size={16} />
+        {/* Header label */}
+        <div className='flex items-center gap-2 px-3 py-2 bg-gray-900'>
+          <span className='w-2 h-2 rounded-full bg-emerald-400 animate-pulse' />
+          <span className='text-white text-xs font-semibold'>AI Interviewer</span>
+          {isAIPlaying && (
+            <span className='ml-auto text-emerald-400 text-[10px] font-bold animate-pulse'>SPEAKING</span>
+          )}
         </div>
 
-        {/* Video */}
-        <div className='relative'>
-          <video
-            src={videoSource} key={videoSource} ref={videoRef}
-            muted playsInline preload="auto"
-            className="w-full h-auto object-cover"
-          />
-          {/* Webcam overlay */}
-          <div className="absolute bottom-2 right-2 z-10">
-            <WebcamMonitor onEmotionDetected={emotion => setCurrentEmotion(emotion)} />
-          </div>
-          {/* Emotion badge */}
-          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full text-white text-[10px] font-semibold z-10">
-            {currentEmotion}
-          </div>
-        </div>
+        {/* AI Video */}
+        <video
+          src={videoSource} key={videoSource} ref={videoRef}
+          muted playsInline preload="auto"
+          className="w-full h-auto object-cover"
+        />
 
         {/* Subtitle */}
         <AnimatePresence>
@@ -444,6 +428,33 @@ function Step2Interview({ interviewData, onFinish }) {
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* ── Draggable User Webcam ─────────────────────────────────────────── */}
+      <div
+        ref={webcamCardRef}
+        className='rounded-2xl shadow-2xl overflow-hidden border-2 border-blue-400/60 bg-black select-none'
+        style={{ position: 'fixed', left: webcamPos.x, top: webcamPos.y, zIndex: 50, width: 180 }}
+      >
+        {/* Drag handle */}
+        <div
+          onMouseDown={handleWebcamMouseDown}
+          onTouchStart={handleWebcamTouchStart}
+          onTouchMove={handleWebcamTouchMove}
+          onTouchEnd={handleWebcamMouseUp}
+          className={`flex items-center justify-between px-3 py-1.5 bg-gray-900 ${isWebcamDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        >
+          <div className='flex items-center gap-1.5'>
+            <span className='w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse' />
+            <span className='text-white text-[10px] font-semibold'>You</span>
+          </div>
+          <div className='flex items-center gap-1'>
+            <span className='text-[9px] text-gray-400 italic'>{currentEmotion}</span>
+            <BsGripVertical className='text-gray-400' size={14} />
+          </div>
+        </div>
+        {/* User webcam feed */}
+        <WebcamMonitor onEmotionDetected={emotion => setCurrentEmotion(emotion)} />
       </div>
 
       {/* ── Interview Copilot ─────────────────────────────────────────────── */}

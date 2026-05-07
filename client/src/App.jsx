@@ -14,6 +14,7 @@ import PublicReport from './pages/PublicReport'
 import Dashboard from './pages/Dashboard'
 import AdminDashboard from './pages/AdminDashboard'
 import Leaderboard from './pages/Leaderboard'
+import StaticPage from './pages/StaticPage'
 
 export const ServerUrl  = "http://localhost:8000"
 
@@ -45,6 +46,15 @@ function App() {
       <Route path='/dashboard' element={<Dashboard/>}/>
       <Route path='/admin' element={<AdminDashboard/>}/>
       <Route path='/leaderboard' element={<Leaderboard/>}/>
+
+      {/* Static Footer Pages */}
+      <Route path='/tips' element={<StaticPage/>}/>
+      <Route path='/questions' element={<StaticPage/>}/>
+      <Route path='/blog' element={<StaticPage/>}/>
+      <Route path='/privacy' element={<StaticPage/>}/>
+      <Route path='/terms' element={<StaticPage/>}/>
+      <Route path='/cookies' element={<StaticPage/>}/>
+      <Route path='/contact' element={<StaticPage/>}/>
 
     </Routes>
   )

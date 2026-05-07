@@ -24,31 +24,31 @@ function PublicReport() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-red-500 font-medium text-lg">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black transition-colors">
+        <p className="text-red-500 dark:text-red-400 font-medium text-lg">{error}</p>
       </div>
     )
   }
 
   if (!report) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-gray-500 text-lg">Loading Public Report...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black transition-colors">
+        <p className="text-gray-500 dark:text-gray-400 text-lg">Loading Public Report...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-black py-10 transition-colors pt-28">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 transition-colors">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white transition-colors">
             Public Interview Report for {report.userName}
           </h2>
-          <p className="text-gray-500 mt-1">
-            Role: <span className="font-medium text-gray-700">{report.role}</span> | 
-            Company: <span className="font-medium text-gray-700">{report.targetCompany || "N/A"}</span> |
-            Difficulty: <span className="font-medium text-gray-700">{report.difficulty}</span>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 transition-colors">
+            Role: <span className="font-medium text-gray-700 dark:text-gray-300">{report.role}</span> | 
+            Company: <span className="font-medium text-gray-700 dark:text-gray-300">{report.targetCompany || "N/A"}</span> |
+            Difficulty: <span className="font-medium text-gray-700 dark:text-gray-300">{report.difficulty}</span>
           </p>
         </div>
       </div>
